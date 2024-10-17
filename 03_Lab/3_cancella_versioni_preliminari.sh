@@ -22,7 +22,7 @@ export FATHER_PATH
 echo 0 > "./max_counter.tmp"
 touch "./max_dirname.tmp"
 
-sh "./3_cancella_versioni_preliminari_aux.sh" "$1"
+bash "./3_cancella_versioni_preliminari_aux.sh" "$1"
 
 echo "$(cat "./max_dirname.tmp")"
 

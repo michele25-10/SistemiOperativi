@@ -33,7 +33,7 @@ export FATHER_PATH
 mkdir ./tmp
 echo 0 > ./tmp_counter.tmp
 
-sh 4_copylines_search.sh "$dir" "$str" $*
+bash 4_copylines_search.sh "$dir" "$str" $*
 
 cat ./tmp_counter.tmp
 rm ./tmp_counter.tmp
