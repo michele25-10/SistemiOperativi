@@ -18,8 +18,8 @@ fi
 srg=$1
 dst=$2
 
-FATHER_PATH="$(pwd)"
-export FATHER_PATH
+PATH=$PATH:"$(pwd)"
+export PATH
 
 cd "$srg"
 srg_abs="$(pwd)"
@@ -33,8 +33,9 @@ if (test ! -d "duplicati"); then
     mkdir "duplicati"
 fi
 
-sh "$FATHER_PATH/ricorsivo.sh" "$srg_abs" "$dst_abs"
+ricorsivo.sh "$srg_abs" "$dst_abs"
 
 echo "FILE non duplicati $(ls $dst_abs)"
 echo "FILE duplicati $(ls "$dst_abs/duplicati")"
 
+#sh riordina_foto.sh /home/studente/Scrivania/SistemiOperativi/prova /home/studente/Scrivania/SistemiOperativi/prova2

@@ -18,6 +18,6 @@ done
 for directory in *
 do
     if (test -d $directory); then
-        sh "$FATHER_PATH/ricorsivo.sh" "$srg/$directory" "$dst"
+        ricorsivo.sh "$srg/$directory" "$dst"
     fi
 done
