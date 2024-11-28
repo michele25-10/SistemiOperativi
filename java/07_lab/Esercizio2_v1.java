@@ -4,7 +4,6 @@ import java.io.InputStreamReader;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.charset.Charset;
-import java.sql.Array;
 import java.util.Arrays;
 
 class FromInput extends Thread {
@@ -28,6 +27,7 @@ class FromInput extends Thread {
                  */
                 pos.flush();
             }
+            pos.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -50,10 +50,15 @@ class ToOutput extends Thread {
              * che la pipe è stata chiusa
              */
             while ((nRead = pis.read(buffer)) > 0) {
+                /*
+                 * Perchè l'array buffer ha lunghezza 1024, invece message
+                 * buffer ha lunghezza la lunghezza della stringa
+                 */
                 byte messageBuffer[] = Arrays.copyOfRange(buffer, 0, nRead);
                 String message = new String(messageBuffer, 0, messageBuffer.length);
                 System.out.println(message);
             }
+            pis.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -71,7 +76,6 @@ public class Esercizio2_v1 {
 
             to.start();
             fi.start();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
