@@ -15,7 +15,7 @@
 
 # Comunicazione tra thread
 
-- Serializzazione --> non approfondita in questo corso
+- Serializzazione
 - Pipe
 
   - PipedOutputStream
@@ -24,7 +24,7 @@
   ```java
     PipedInputStream pis = new PipedInputStream();
     try {
-        PipedOutputStream pos = new PipedOutputStream(pip);
+        PipedOutputStream pos = new PipedOutputStream(pis);
 
         //Oppure per concatenare due pipe
         pis.connect(pos);
@@ -144,7 +144,10 @@ Come si può notare in questo esempio la variabile AtomicBoolean consente di fer
     int id = Integer.parseInt(br.readLine());
     br.close();
 
-    /*Scrittura su una pipe*/
+
+
+    /*-----BUFFERED READER E WRITER-------/*
+    /*Scrittura su una pipe buffered*/
     BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(pop));
         while(running.get()) {
             try {
@@ -157,7 +160,7 @@ Come si può notare in questo esempio la variabile AtomicBoolean consente di fer
             } catch(InterruptedException | IOException e) {}
         }
 
-    /* Lettura da una pipe */
+    /* Lettura da una pipe buffered */
     BufferedReader br = new BufferedReader(new InputStreamReader(pip));
     while (i < 10) {
         try {
@@ -166,5 +169,102 @@ Come si può notare in questo esempio la variabile AtomicBoolean consente di fer
         } catch(IOException e) {}
         i++;
     }
+
+
+
+    /*-----------Object--------*/
+    //Creo un oggetto Message che rappresenta il contenuto dell'oggetto che viene scambiato tra processi es.
+    public class Message implements Serializable{
+        private float temperature;
+
+        public Message(float temperature) {
+            this.temperature = temperature;
+        }
+
+        public float getTemperature() {
+            return temperature;
+        }
+    }
+
+    //esempio scrittura su pipe con Object
+    PipedOtuputStream pos;
+        try {
+            ObjectOutputStrem oos = new ObjectOutputStream(pos);
+            float temperature = 18 + random.nextFloat() * (21 - 18);
+            // creo un messaggio contenente il valore di temperatura
+            Message tempMessage = new Message(temperature);
+            oos.writeObject(tempMessage);
+            oos.flush();
+        } catch(IOException e) {
+            System.err.println("Impossibile comunicare con ObjectOutputStream");
+            e.printStackTrace();
+        }
+
+    //esempio lettura su pipe con Object
+        ObjectInputStream ois = null;
+        try {
+            ois = new ObjectInputStream(pis);
+        } catch(IOException e) {
+            System.err.println("Impossible to create an ObjectInputStream from the given PipedInputStream!");
+            e.printStackTrace();
+            System.exit(-2);
+        }
+
+        try {
+            Message tempMessage = (Message)ois.readObject();
+            if (tempMessage == null) break;
+
+            float temperature = tempMessage.getTemperature();
+            if (temperature < desideredTemperature) {
+                System.out.println("*** Accendere il riscaldamento, temperatura corrente: " + temperature + "***");
+            }
+        } catch(IOException | ClassNotFoundException e) {
+            System.err.println("Actuator: error when reading from Sensor");
+            e.printStackTrace();
+        }
+
+
+
+    /*-----------Stream--------*/
+    // Scrittura su pipe con stream
+    PipedOutputStream pos = new PipedOutputStream();
+    String strTemp = temperature + "";
+    byte message[] = strTemp.getBytes();
+    try {
+        pos.write(message);
+        pos.flush();
+    } catch(IOException e) {}
+
+    //Lettura su pipe con stream
+    PipedOtputStream pis = new PipedOtputStream();
+    byte buffer[] = new byte[128];
+    int nread = 0;
+    try {
+        while((nread = pis.read(buffer)) > 0) {
+			// utilizziamo solo i primi nread byte per ricostruire la stringa,
+			// ovvero i byte effettivamente ricevuti tramite pis.read(...)
+            String received = new String(buffer, 0, nread, Charset.forName("UTF-8"));
+            //System.out.println("Received from Sensor: " + received);
+            float temperature = Float.parseFloat(received);
+        }
+    } catch (IOException e) {}
+
+
+
+    /*------------Buffered-------------*/
+    //Scrittura su una pipe con buffered
+    DataOutputStream dos = new DataOutputStream(pos);
+    float temperature = 18 + random.nextFloat() * (21 - 18);
+    try {
+        dos.writeFloat(temperature);
+        dos.flush();
+    } catch(IOException e) {}
+
+    //Lettura su una pipe con buffered
+    DataInputStream dis = new DataInputStream(pis);
+    float temp = 0;
+    try{
+        temp = dis.readFloat();
+    } catch(IOException e){}
 
 ```
