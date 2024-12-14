@@ -226,6 +226,7 @@ Come si può notare in questo esempio la variabile AtomicBoolean consente di fer
 
 
     /*-----------Stream--------*/
+    //Vedi esercizio 4 lab 09 per capire bene come strutturare il codice
     // Scrittura su pipe con stream
     PipedOutputStream pos = new PipedOutputStream();
     String strTemp = temperature + "";
