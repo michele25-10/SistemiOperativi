@@ -22,8 +22,16 @@
   - PipedInputStream
 
   ```java
-    PipedOutputStream pos = new PipedOutputStream();
-    PipedInputStream pis = new PipedInputStream(pos);
+    PipedInputStream pis = new PipedInputStream();
+    try {
+        PipedOutputStream pos = new PipedOutputStream(pip);
+
+        //Oppure per concatenare due pipe
+        pis.connect(pos);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
 
     BufferedReader br = new BufferedReader(new InputStreamReader(pis));
     BufferedWriter br = new BufferedWriter(new OutputStreamWriter(pos));
@@ -70,5 +78,93 @@ Le variabili atomiche in Java fanno parte del pacchetto java.util.concurrent.ato
 Esempio:
 
 ```java
+public class WorkerThreadMetodo2 implements Runnable {
+
+	// AtomicBoolean, "A boolean value that may be updated atomically"
+	// to prevent conflicts in setting and checking the variable from different threads
+	// https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicBoolean.html
     private final AtomicBoolean running = new AtomicBoolean(false);
+
+	private int i;
+	public WorkerThreadMetodo2(int i){
+		this.i = i;
+	}
+
+    // stop the thread
+    public void stop() {
+        running.set(false);
+    }
+
+    public void interrupt() {
+        running.set(false);
+        Thread.currentThread().interrupt();
+    }
+
+    public void run() {
+        running.set(true);
+        while(running.get()) {
+            try {
+				System.out.println("Thread: " + i);
+                Thread.sleep(1000);
+            }
+			catch(InterruptedException e) {
+                System.out.println(Thread.currentThread() + " interrupted, terminating...");
+            }
+        }
+    }
+}
+```
+
+Come si può notare in questo esempio la variabile AtomicBoolean consente di fermare il processo e di fare gli opportuni while senza usare Thread.currentThread().isInterrupted();
+
+# Suggerimenti del tutor per affrontare l'esame
+
+### Main
+
+- istanzio oggetti comuni, thread e pipedStream
+- aspetto comunicazioni o fine esecuzione
+- join() --> attendo chiusura processo in un try catch
+
+### Oggetti thread
+
+- creati da MAIN
+- eseguono qualcosa
+- comunicano col MAIN quando hanno finito
+
+### Oggetti comuni
+
+- istanziati da MAIN, non messi su thread
+- offrono metodi pubblici syncronizhed o variabili Atomic per variabili shared
+
+# Codice Java ripetuto negli esercizi
+
+```java
+    // Lettura da tastiera di un intero
+    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    int id = Integer.parseInt(br.readLine());
+    br.close();
+
+    /*Scrittura su una pipe*/
+    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(pop));
+        while(running.get()) {
+            try {
+                String result = "Thread " + Thread.currentThread() + " con cpuLoad: " + (int)(Math.random() * 100);
+                bw.write(result);
+                bw.newLine();
+                bw.flush();
+
+                Thread.sleep(150);
+            } catch(InterruptedException | IOException e) {}
+        }
+
+    /* Lettura da una pipe */
+    BufferedReader br = new BufferedReader(new InputStreamReader(pip));
+    while (i < 10) {
+        try {
+		    String line = br.readLine();
+			System.out.println(line);
+        } catch(IOException e) {}
+        i++;
+    }
+
 ```
