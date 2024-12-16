@@ -1,4 +1,4 @@
 *.class
 /test*
-/*/*/test
+/*/*/test*
 /*/*/a
